@@ -23,3 +23,37 @@ jobs:
 
       - name: Run tests and verify coverage
         run: mvn clean verify
+
+      - name: Print JaCoCo overall coverage
+        if: always()
+        shell: bash
+        run: |
+          REPORT="target/site/jacoco/jacoco.xml"
+
+          if [ ! -f "$REPORT" ]; then
+            echo "JaCoCo XML report not found: $REPORT"
+            exit 0
+          fi
+
+          awk '
+            /<counter type="LINE"/ {
+              for (i = 1; i <= NF; i++) {
+                if ($i ~ /^covered="/) {
+                  gsub(/covered="|"/, "", $i)
+                  covered = $i
+                }
+                if ($i ~ /^missed="/) {
+                  gsub(/missed="|"/, "", $i)
+                  missed = $i
+                }
+              }
+              total = covered + missed
+              if (total > 0) {
+                printf "Overall JaCoCo line coverage: %.2f%% (%d/%d lines covered)\n", covered * 100 / total, covered, total
+              }
+              found = 1
+            }
+            END {
+              if (!found) print "LINE coverage counter not found in JaCoCo XML."
+            }
+          ' "$REPORT"
