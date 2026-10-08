@@ -15,6 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.compiler.release>17</maven.compiler.release>
+        <quarkus.package.write-transformed-bytecode-to-build-output>true</quarkus.package.write-transformed-bytecode-to-build-output>
     </properties>
 
     <dependencyManagement>
@@ -60,6 +61,12 @@
             <artifactId>quarkus-openapi-generator-server</artifactId>
             <version>2.4.7</version>
         </dependency>
+        
+        <dependency>
+    		<groupId>io.quarkus</groupId>
+		    <artifactId>quarkus-jacoco</artifactId>
+		    <scope>test</scope>
+		</dependency>
 
     </dependencies>
 
@@ -98,28 +105,8 @@
                             <goal>prepare-agent-integration</goal>
                         </goals>
                         <configuration>
-                            <propertyName>integrationTestArgLine</propertyName>
-                            <destFile>${java.io.tmpdir}/jacoco-it.exec</destFile>
-                            <append>false</append>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>merge</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>merge</goal>
-                        </goals>
-                        <configuration>
-                            <fileSets>
-                                <fileSet>
-                                    <directory>${java.io.tmpdir}</directory>
-                                    <includes>
-                                        <include>jacoco.exec</include>
-                                        <include>jacoco-it.exec</include>
-                                    </includes>
-                                </fileSet>
-                            </fileSets>
-                            <destFile>${java.io.tmpdir}/jacoco-merged.exec</destFile>
+                            <destFile>${java.io.tmpdir}/jacoco.exec</destFile>
+                            <append>true</append>
                         </configuration>
                     </execution>
                     <execution>
@@ -129,7 +116,7 @@
                             <goal>report</goal>
                         </goals>
                         <configuration>
-                            <dataFile>${java.io.tmpdir}/jacoco-merged.exec</dataFile>
+                            <dataFile>${java.io.tmpdir}/jacoco.exec</dataFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -139,7 +126,7 @@
                             <goal>check</goal>
                         </goals>
                         <configuration>
-                            <dataFile>${java.io.tmpdir}/jacoco-merged.exec</dataFile>
+                            <dataFile>${java.io.tmpdir}/jacoco.exec</dataFile>
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
@@ -181,7 +168,7 @@
                             <systemPropertyVariables>
                                 <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
                                 <maven.home>${maven.home}</maven.home>
-                                <quarkus.test.arg-line>${integrationTestArgLine}</quarkus.test.arg-line>
+                                <quarkus.test.arg-line>${argLine}</quarkus.test.arg-line>
                             </systemPropertyVariables>
                         </configuration>
                     </execution>
