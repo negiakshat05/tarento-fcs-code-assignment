@@ -5,8 +5,9 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 
-import io.quarkus.test.junit.QuarkusIntegrationTest;
 import org.junit.jupiter.api.Test;
+
+import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
 public class WarehouseEndpointIT {
@@ -64,5 +65,42 @@ public class WarehouseEndpointIT {
 				{"businessUnitCode":"MWH.012","location":"AMSTERDAM-001","capacity":60,"stock":999}
 				""").when().post("warehouse/MWH.012/replacement").then().statusCode(400)
 				.body(containsString("Replacement stock must match current warehouse stock"));
+	}
+
+	@Test
+	void shouldRejectInvalidWarehouseId() {
+		given().when().get("warehouse/not-a-number").then().statusCode(400)
+				.body(containsString("Invalid warehouse id"));
+	}
+
+	@Test
+	void shouldRejectInvalidWarehouseIdWhenArchiving() {
+		given().when().delete("warehouse/not-a-number").then().statusCode(400)
+				.body(containsString("Invalid warehouse id"));
+	}
+
+	@Test
+	void shouldReturn404ForUnknownBusinessUnitCode() {
+		given().contentType("application/json").body("""
+				{
+				  "location": "AMSTERDAM-001",
+				  "capacity": 30,
+				  "stock": 5
+				}
+				""").when().post("warehouse/UNKNOWN-BU/replacement").then().statusCode(404)
+				.body(containsString("does not exist"));
+	}
+
+	@Test
+	void shouldRejectReplacementWithDifferentBusinessUnitCode() {
+		given().contentType("application/json").body("""
+				{
+				  "businessUnitCode": "DIFFERENT-BU",
+				  "location": "AMSTERDAM-001",
+				  "capacity": 30,
+				  "stock": 5
+				}
+				""").when().post("warehouse/MWH.012/replacement").then().statusCode(400)
+				.body(containsString("Business unit code cannot differ"));
 	}
 }

@@ -12,6 +12,7 @@ import io.quarkus.test.junit.QuarkusTest;
 
 @QuarkusTest
 public class ProductEndpointTest {
+	
 	@Test
 	void shouldListSeedProducts() {
 		given().when().get("product").then().statusCode(200).body("size()", greaterThanOrEqualTo(3))
