@@ -11,7 +11,7 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
 
 	@Override
 	public List<Warehouse> getAll() {
-		return this.listAll().stream().map(DbWarehouse::toWarehouse).toList();
+		return this.list("archivedAt IS NULL").stream().map(DbWarehouse::toWarehouse).toList();
 	}
 
 	@Override

@@ -38,7 +38,7 @@
 **Task**: Discuss the cost control aspects of replacing a Warehouse. Why is it important to preserve cost history and how this relates to keeping the new Warehouse operation within budget?
 
 **Questions you may have and considerations:**
-[ I'd first compare the replacement costs with the existing Warehouse’s operating costs and budget. The old Warehouse’s cost history should be preserved so we can track past spending and compare it with the new Warehouse.We also consider one-time replacement costs, expected savings, and any impact on operations. The goal would be to ensure the replacement stays within budget while giving the business a clear view of its financial impact ]
+[ I'd first compare the replacement costs with the existing Warehouse’s operating costs and budget. The old Warehouse’s cost history should be preserved so we can track past spending and compare it with the new Warehouse. We also consider one-time replacement costs, expected savings, and any impact on operations. The goal would be to ensure the replacement stays within budget while giving the business a clear view of its financial impact ]
 
 ## Instructions for Candidates
 Before starting the case study, read the [BRIEFING.md](BRIEFING.md) to quickly understand the domain, entities, business rules, and other relevant details.
