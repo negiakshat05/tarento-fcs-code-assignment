@@ -128,7 +128,6 @@ public class CreateWarehouseUseCaseTest {
 
 		@Override
 		public void update(Warehouse warehouse) {
-			// Not needed by these tests.
 		}
 
 		@Override
