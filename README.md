@@ -29,6 +29,10 @@ mvn clean verify
 
 The build fails if line coverage is below 80%. The HTML report is generated at `target/site/jacoco/index.html`.
 
+## Screenshots
+
+Application screenshots demonstrating warehouse creation, retrieval, business-rule validation, and code coverage are available in the `screenshots/` directory.
+
 ### CI/CD
 
 GitHub Actions automates the Maven build and test execution on configured workflow triggers.
