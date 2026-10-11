@@ -1,7 +1,12 @@
 package com.fulfilment.application.monolith.products;
 
+import java.util.List;
+
+import org.jboss.logging.Logger;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.quarkus.panache.common.Sort;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -17,8 +22,6 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
-import java.util.List;
-import org.jboss.logging.Logger;
 
 @Path("product")
 @ApplicationScoped
@@ -26,95 +29,97 @@ import org.jboss.logging.Logger;
 @Consumes("application/json")
 public class ProductResource {
 
-  @Inject ProductRepository productRepository;
+	@Inject
+	ProductRepository productRepository;
 
-  private static final Logger LOGGER = Logger.getLogger(ProductResource.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(ProductResource.class.getName());
 
-  @GET
-  public List<Product> get() {
-    return productRepository.listAll(Sort.by("name"));
-  }
+	@GET
+	public List<Product> get() {
+		return productRepository.listAll(Sort.by("name"));
+	}
 
-  @GET
-  @Path("{id}")
-  public Product getSingle(Long id) {
-    Product entity = productRepository.findById(id);
-    if (entity == null) {
-      throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
-    }
-    return entity;
-  }
+	@GET
+	@Path("{id}")
+	public Product getSingle(Long id) {
+		Product entity = productRepository.findById(id);
+		if (entity == null) {
+			throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
+		}
+		return entity;
+	}
 
-  @POST
-  @Transactional
-  public Response create(Product product) {
-    if (product.id != null) {
-      throw new WebApplicationException("Id was invalidly set on request.", 422);
-    }
+	@POST
+	@Transactional
+	public Response create(Product product) {
+		if (product.id != null) {
+			throw new WebApplicationException("Id was invalidly set on request.", 422);
+		}
 
-    productRepository.persist(product);
-    return Response.ok(product).status(201).build();
-  }
+		productRepository.persist(product);
+		return Response.ok(product).status(201).build();
+	}
 
-  @PUT
-  @Path("{id}")
-  @Transactional
-  public Product update(Long id, Product product) {
-    if (product.name == null) {
-      throw new WebApplicationException("Product Name was not set on request.", 422);
-    }
+	@PUT
+	@Path("{id}")
+	@Transactional
+	public Product update(Long id, Product product) {
+		if (product.name == null) {
+			throw new WebApplicationException("Product Name was not set on request.", 422);
+		}
 
-    Product entity = productRepository.findById(id);
+		Product entity = productRepository.findById(id);
 
-    if (entity == null) {
-      throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
-    }
+		if (entity == null) {
+			throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
+		}
 
-    entity.name = product.name;
-    entity.description = product.description;
-    entity.price = product.price;
-    entity.stock = product.stock;
+		entity.name = product.name;
+		entity.description = product.description;
+		entity.price = product.price;
+		entity.stock = product.stock;
 
-    productRepository.persist(entity);
+		productRepository.persist(entity);
 
-    return entity;
-  }
+		return entity;
+	}
 
-  @DELETE
-  @Path("{id}")
-  @Transactional
-  public Response delete(Long id) {
-    Product entity = productRepository.findById(id);
-    if (entity == null) {
-      throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
-    }
-    productRepository.delete(entity);
-    return Response.status(204).build();
-  }
+	@DELETE
+	@Path("{id}")
+	@Transactional
+	public Response delete(Long id) {
+		Product entity = productRepository.findById(id);
+		if (entity == null) {
+			throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
+		}
+		productRepository.delete(entity);
+		return Response.status(204).build();
+	}
 
-  @Provider
-  public static class ErrorMapper implements ExceptionMapper<Exception> {
+	@Provider
+	public static class ErrorMapper implements ExceptionMapper<Exception> {
 
-    @Inject ObjectMapper objectMapper;
+		@Inject
+		ObjectMapper objectMapper;
 
-    @Override
-    public Response toResponse(Exception exception) {
-      LOGGER.error("Failed to handle request", exception);
+		@Override
+		public Response toResponse(Exception exception) {
+			LOGGER.error("Failed to handle request", exception);
 
-      int code = 500;
-      if (exception instanceof WebApplicationException) {
-        code = ((WebApplicationException) exception).getResponse().getStatus();
-      }
+			int code = 500;
+			if (exception instanceof WebApplicationException) {
+				code = ((WebApplicationException) exception).getResponse().getStatus();
+			}
 
-      ObjectNode exceptionJson = objectMapper.createObjectNode();
-      exceptionJson.put("exceptionType", exception.getClass().getName());
-      exceptionJson.put("code", code);
+			ObjectNode exceptionJson = objectMapper.createObjectNode();
+			exceptionJson.put("exceptionType", exception.getClass().getName());
+			exceptionJson.put("code", code);
 
-      if (exception.getMessage() != null) {
-        exceptionJson.put("error", exception.getMessage());
-      }
+			if (exception.getMessage() != null) {
+				exceptionJson.put("error", exception.getMessage());
+			}
 
-      return Response.status(code).entity(exceptionJson).build();
-    }
-  }
+			return Response.status(code).entity(exceptionJson).build();
+		}
+	}
 }

@@ -52,8 +52,6 @@ public class WarehouseFulfillmentEndpointTest {
 		Long second = create(storeId, product2, 2L);
 		Long third = create(storeId, product3, 3L);
 
-		// Reusing an existing warehouse is allowed because the limit is on different
-		// warehouses.
 		Long fourth = create(storeId, product4, 1L);
 
 		long product5 = createProduct();
@@ -78,9 +76,19 @@ public class WarehouseFulfillmentEndpointTest {
 		long warehouseId = createWarehouse();
 
 		Long[] associations = new Long[5];
+		long firstProductId = -1L;
 		for (int i = 0; i < 5; i++) {
-			associations[i] = create(storeId, createProduct(), warehouseId);
+			long productId = createProduct();
+			if (i == 0) {
+				firstProductId = productId;
+			}
+			associations[i] = create(storeId, productId, warehouseId);
 		}
+
+		// The same product in another store does not increase the warehouse's distinct
+		// product count.
+		long secondStoreId = createStore();
+		Long existingProductInSecondStore = create(secondStoreId, firstProductId, warehouseId);
 
 		long sixthProduct = createProduct();
 		given().contentType("application/json")
@@ -91,6 +99,7 @@ public class WarehouseFulfillmentEndpointTest {
 		for (Long association : associations) {
 			delete(association);
 		}
+		delete(existingProductInSecondStore);
 	}
 
 	@Test

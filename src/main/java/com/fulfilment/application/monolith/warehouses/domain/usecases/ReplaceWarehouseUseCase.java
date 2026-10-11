@@ -59,6 +59,15 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 			throw new IllegalArgumentException("Warehouse capacity exceeds location maximum capacity");
 		}
 
+		int capacityOfOtherWarehouses = warehouseStore.getAll().stream()
+				.filter(warehouse -> warehouse.archivedAt == null)
+				.filter(warehouse -> newWarehouse.location.equals(warehouse.location))
+				.filter(warehouse -> !newWarehouse.businessUnitCode.equals(warehouse.businessUnitCode))
+				.mapToInt(Warehouse::getCapacitySafely).sum();
+		if (capacityOfOtherWarehouses + newWarehouse.capacity > location.maxCapacity) {
+			throw new IllegalArgumentException("Total warehouse capacity exceeds location maximum capacity");
+		}
+
 		current.archivedAt = LocalDateTime.now();
 		warehouseStore.update(current);
 

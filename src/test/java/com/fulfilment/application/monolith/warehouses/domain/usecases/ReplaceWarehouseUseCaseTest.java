@@ -6,14 +6,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.LocationResolver;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 public class ReplaceWarehouseUseCaseTest {
 
@@ -72,6 +74,22 @@ public class ReplaceWarehouseUseCaseTest {
 				() -> useCase.replace(warehouse("MWH.012", "AMSTERDAM-001", 4, 5)));
 
 		assertEquals("Replacement capacity cannot be lower than current stock", exception.getMessage());
+	}
+
+	@Test
+	void shouldRejectReplacementThatExceedsTotalLocationCapacity() {
+		Warehouse current = warehouse("MWH.012", "AMSTERDAM-001", 50, 5);
+		current.id = 12L;
+		store.add(current);
+		store.add(warehouse("MWH.013", "AMSTERDAM-001", 60, 10));
+
+		IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
+				() -> useCase.replace(warehouse("MWH.012", "AMSTERDAM-001", 50, 5)));
+
+		assertEquals("Total warehouse capacity exceeds location maximum capacity", exception.getMessage());
+		assertNull(current.archivedAt);
+		assertNull(store.created);
+		assertNull(store.updated);
 	}
 
 	@Test

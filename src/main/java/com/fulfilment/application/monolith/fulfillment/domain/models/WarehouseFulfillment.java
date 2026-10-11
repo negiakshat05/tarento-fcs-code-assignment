@@ -1,4 +1,4 @@
-package com.fulfilment.application.monolith.fulfillment;
+package com.fulfilment.application.monolith.fulfillment.domain.models;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

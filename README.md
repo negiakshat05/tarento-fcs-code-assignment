@@ -1,87 +1,40 @@
-# Java Code Assignment
+# Warehouse and Store Fulfilment API
 
-This is a short code assignment that explores various aspects of software development, including API implementation, documentation, persistence layer handling, and testing.
+Java 17 and Quarkus REST API for managing stores, products, warehouses, and fulfilment associations.
 
-## About the assignment
+## Features
+- Create, retrieve, replace, and archive warehouses.
+- Manage stores and products.
+- Validate location, capacity, stock, and fulfilment limits.
+- Notify the legacy store integration after successful transaction completion.
+- Run automated tests with an 80% minimum JaCoCo line-coverage threshold.
 
-You will find the tasks of this assignment on [CODE_ASSIGNMENT](CODE_ASSIGNMENT.md) file
-
-## About the code base
-
-This is based on https://github.com/quarkusio/quarkus-quickstarts
-
-### Requirements
-
-To compile and run this demo you will need:
-
+## Requirements
 - JDK 17+
+- Maven
+- Docker for Quarkus Dev Services and Testcontainers
 
-In addition, you will need either a PostgreSQL database, or Docker to run one.
+## Run locally
 
-### Configuring JDK 17+
+```bash
+mvn quarkus:dev
+```
+The API is available at `http://localhost:8080`. With Docker available, Quarkus Dev Services can start PostgreSQL for development and tests.
 
-Make sure that `JAVA_HOME` environment variables has been set, and that a JDK 17+ `java` command is on the path.
+## Test and coverage
 
-## Building the demo
-
-Execute the Maven build on the root of the project:
-
-```sh
-./mvnw package
+```bash
+mvn clean verify
 ```
 
-## Running the demo
+The build fails if line coverage is below 80%. The HTML report is generated at `target/site/jacoco/index.html`.
 
-### Live coding with Quarkus
+### CI/CD
 
-The Maven Quarkus plugin provides a development mode that supports
-live coding. To try this out:
+GitHub Actions automates the Maven build and test execution on configured workflow triggers.
 
-```sh
-./mvnw quarkus:dev
-```
-
-In this mode you can make changes to the code and have the changes immediately applied, by just refreshing your browser.
-
-    Hot reload works even when modifying your JPA entities.
-    Try it! Even the database schema will be updated on the fly.
-
-## (Optional) Run Quarkus in JVM mode
-
-When you're done iterating in developer mode, you can run the application as a conventional jar file.
-
-First compile it:
-
-```sh
-./mvnw package
-```
-
-Next we need to make sure you have a PostgreSQL instance running (Quarkus automatically starts one for dev and test mode). To set up a PostgreSQL database with Docker:
-
-```sh
-docker run -it --rm=true --name quarkus_test -e POSTGRES_USER=quarkus_test -e POSTGRES_PASSWORD=quarkus_test -e POSTGRES_DB=quarkus_test -p 15432:5432 postgres:13.3
-```
-
-Connection properties for the Agroal datasource are defined in the standard Quarkus configuration file,
-`src/main/resources/application.properties`.
-
-Then run it:
-
-```sh
-java -jar ./target/quarkus-app/quarkus-run.jar
-```
-    Have a look at how fast it boots.
-    Or measure total native memory consumption...
-
-
-## See the demo in your browser
-
-Navigate to:
-
-<http://localhost:8080/index.html>
-
-Have fun, and join the team of contributors!
-
-## Troubleshooting
-
-Using **IntelliJ**, in case the generated code is not recognized and you have compilation failures, you may need to add `target/.../jaxrs` folder as "generated sources".
+## Assignment documents
+- `CODE_ASSIGNMENT.md` — requirements
+- `case-study/BRIEFING.md` — domain overview
+- `QUESTIONS.md` — written answers
+- `case-study/CASE_STUDY.md` — case-study responses

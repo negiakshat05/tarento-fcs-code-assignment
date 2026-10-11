@@ -1,15 +1,19 @@
-package com.fulfilment.application.monolith.fulfillment;
+package com.fulfilment.application.monolith.fulfillment.validators;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import com.fulfilment.application.monolith.fulfillment.adapters.database.WarehouseFulfillmentRepository;
 import com.fulfilment.application.monolith.products.ProductRepository;
 import com.fulfilment.application.monolith.stores.Store;
 import com.fulfilment.application.monolith.warehouses.adapters.database.WarehouseRepository;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import jakarta.transaction.Transactional;
 
 @ApplicationScoped
-public class WarehouseFulfillmentService {
+public class WarehouseFulfillmentValidator {
 
 	private static final int MAX_WAREHOUSES_PER_PRODUCT_AND_STORE = 2;
 	private static final int MAX_WAREHOUSES_PER_STORE = 3;
@@ -24,8 +28,7 @@ public class WarehouseFulfillmentService {
 	@Inject
 	WarehouseRepository warehouseRepository;
 
-	@Transactional
-	public WarehouseFulfillment create(Long storeId, Long productId, Long warehouseId) {
+	public void validateCreate(Long storeId, Long productId, Long warehouseId) {
 		validateIds(storeId, productId, warehouseId);
 
 		if (Store.findById(storeId) == null) {
@@ -43,9 +46,10 @@ public class WarehouseFulfillmentService {
 			throw new IllegalArgumentException("Archived warehouse cannot be used for fulfillment");
 		}
 
-		if (!fulfillmentRepository
+		boolean associationExists = !fulfillmentRepository
 				.find("storeId = ?1 and productId = ?2 and warehouseId = ?3", storeId, productId, warehouseId).list()
-				.isEmpty()) {
+				.isEmpty();
+		if (associationExists) {
 			throw new IllegalArgumentException("Fulfillment association already exists");
 		}
 
@@ -56,30 +60,17 @@ public class WarehouseFulfillmentService {
 			throw new IllegalArgumentException("A product can be fulfilled by at most 2 warehouses per store");
 		}
 
-		var warehousesForStore = fulfillmentRepository.find("storeId", storeId).list().stream()
-				.map(association -> association.warehouseId).collect(java.util.stream.Collectors.toSet());
+		Set<Long> warehousesForStore = fulfillmentRepository.find("storeId", storeId).list().stream()
+				.map(association -> association.warehouseId).collect(Collectors.toSet());
 		if (!warehousesForStore.contains(warehouseId) && warehousesForStore.size() >= MAX_WAREHOUSES_PER_STORE) {
 			throw new IllegalArgumentException("A store can be fulfilled by at most 3 different warehouses");
 		}
 
-		long productsForWarehouse = fulfillmentRepository.find("warehouseId", warehouseId).list().stream()
-				.map(association -> association.productId).collect(java.util.stream.Collectors.toSet()).size();
-		if (productsForWarehouse >= MAX_PRODUCTS_PER_WAREHOUSE) {
+		Set<Long> productsForWarehouse = fulfillmentRepository.find("warehouseId", warehouseId).list().stream()
+				.map(association -> association.productId).collect(Collectors.toSet());
+		if (!productsForWarehouse.contains(productId) && productsForWarehouse.size() >= MAX_PRODUCTS_PER_WAREHOUSE) {
 			throw new IllegalArgumentException("A warehouse can store at most 5 different products");
 		}
-
-		WarehouseFulfillment association = new WarehouseFulfillment(storeId, productId, warehouseId);
-		fulfillmentRepository.persistAndFlush(association);
-		return association;
-	}
-
-	@Transactional
-	public void delete(Long id) {
-		WarehouseFulfillment association = fulfillmentRepository.findById(id);
-		if (association == null) {
-			throw new IllegalArgumentException("Fulfillment association does not exist");
-		}
-		fulfillmentRepository.delete(association);
 	}
 
 	private void validateIds(Long storeId, Long productId, Long warehouseId) {
